@@ -40,8 +40,8 @@ class MyAudioHandler extends BaseAudioHandler {
         controls: [
           MediaControl.skipToPrevious,
           MediaControl.rewind,
-          if (playing) MediaControl.pause else MediaControl.play,MediaControl.fastForward,
-          MediaControl.stop,
+          if (playing) MediaControl.pause else MediaControl.play,
+          MediaControl.fastForward,
           MediaControl.skipToNext,
         ],
         systemActions: const {

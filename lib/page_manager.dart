@@ -28,7 +28,6 @@ class PageManager {
     _listenToBufferedPosition();
     _listenToTotalDuration();
     _listenToChangesInSong();
-    _listenToPlaybackSpeedChanges();
   }
 
   Future<void> _loadPlaylist() async {
@@ -58,12 +57,7 @@ class PageManager {
     });
   }
 
-  void _listenToPlaybackSpeedChanges(){
-    // _audioHandler.playbackState.listen((event) {
-    //   double playbackSpeed = processingState.;
-    //   print('Playback speed changed: $playbackSpeed');
-    // });
-  }
+
   void _listenToPlaybackState() {
     _audioHandler.playbackState.listen((playbackState) {
       playBackSpeed.value = playbackState.speed;

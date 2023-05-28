@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            children: const [
+            children:  [
               CurrentSongTitle(),
               Playlist(),
               AddRemoveSongButtons(),
@@ -211,23 +211,66 @@ class AudioProgressBar extends StatelessWidget {
 }
 
 class AudioControlButtons extends StatelessWidget {
-  const AudioControlButtons({Key? key}) : super(key: key);
+   AudioControlButtons({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    bool pre = true;
     return SizedBox(
       height: 60,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
+        children:  [
           PreviousSongButton(),
+          ProgressUpDown(pre: true,),
           PlayButton(),
+          ProgressUpDown(pre: false,),
           NextSongButton(),
         ],
       ),
     );
   }
+
 }
+
+class ProgressUpDown extends StatefulWidget {
+  bool pre;
+    ProgressUpDown({Key? key, required this.pre}) : super(key: key);
+
+  @override
+  State<ProgressUpDown> createState() => _ProgressUpDownState();
+}
+
+class _ProgressUpDownState extends State<ProgressUpDown> {
+  @override
+  Widget build(BuildContext context) {
+    final pageManager = getIt<PageManager>();
+
+    return ValueListenableBuilder<ProgressBarState>(valueListenable: pageManager.progressNotifier, builder: (_, value, __) {
+      return IconButton(iconSize: 50,onPressed: () {
+        if(widget.pre){
+          pageManager.seek(value.current - Duration(seconds: 10));
+
+        }
+        else{
+          pageManager.seek(value.current + Duration(seconds: 10));
+        }
+      }, icon: widget.pre? Column(
+        children: [
+          Icon(Icons.arrow_circle_left, size: 25,),
+          Text("10sec", style: TextStyle(fontSize: 10),)
+        ],
+      ) : Column(
+        children: [
+          Icon(Icons.arrow_circle_right, size: 25,),
+          Text("10sec", style: TextStyle(fontSize: 10),)
+        ],
+      ) );
+    },);
+  }
+}
+
+
 
 class PreviousSongButton extends StatelessWidget {
   const PreviousSongButton({Key? key}) : super(key: key);
