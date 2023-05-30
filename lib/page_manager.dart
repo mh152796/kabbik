@@ -21,6 +21,7 @@ class PageManager {
 
   final _audioHandler = getIt<AudioHandler>();
   Timer? sleepTimer;
+
   // Events: Calls coming from the UI
   void init() async {
     await _loadPlaylist();
@@ -30,6 +31,7 @@ class PageManager {
     _listenToBufferedPosition();
     _listenToTotalDuration();
     _listenToChangesInSong();
+    _listenToButtonActions();
   }
 
   Future<void> _loadPlaylist() async {
@@ -37,11 +39,12 @@ class PageManager {
     final playlist = await songRepository.fetchInitialPlaylist();
     final mediaItems = playlist
         .map((song) => MediaItem(
-      id: song['id'] ?? '',
-      album: song['album'] ?? '',
-      title: song['title'] ?? '',
-      extras: {'url': song['url']},
-    ))
+              id: song['id'] ?? '',
+              album: song['album'] ?? '',
+              title: song['title'] ?? '',
+              artUri: Uri.parse('https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg'),
+              extras: {'url': song['url']},
+            ))
         .toList();
     _audioHandler.addQueueItems(mediaItems);
   }
@@ -58,7 +61,6 @@ class PageManager {
       _updateSkipButtons();
     });
   }
-
 
   void _listenToPlaybackState() {
     _audioHandler.playbackState.listen((playbackState) {
@@ -120,14 +122,31 @@ class PageManager {
     });
   }
 
+  void _listenToButtonActions() {
+    _audioHandler.customEvent.listen((event) {
+      if (event == 'fastForward') {
+        print("FastForward");
+        _seekByDuration(Duration(seconds: 15));
+      } else if (event == 'rewind') {
+        _seekByDuration(Duration(seconds: -15));
+      }
+    });
+  }
 
+  void _seekByDuration(Duration duration) {
+    final playbackState = _audioHandler.playbackState.value;
+    final currentPosition = playbackState.position ?? Duration.zero;
+    final newPosition = currentPosition + duration;
+    _audioHandler.seek(newPosition);
+  }
 
-   void startSleepTimer(double duration) {
+  void startSleepTimer(double duration) {
     sleepTimer?.cancel();
-    sleepDuration.value = duration;// Cancel any existing timer
+    sleepDuration.value = duration; // Cancel any existing timer
     sleepTimer = Timer(Duration(seconds: duration.toInt()), () {
       pause();
-      sleepTime.value = 0;// Stop the audio playback after the specified duration
+      sleepTime.value =
+          0; // Stop the audio playback after the specified duration
     });
   }
 
@@ -151,11 +170,13 @@ class PageManager {
   void play() => _audioHandler.play();
 
   void setSpeed(double value) => _audioHandler.setSpeed(value);
+
   void pause() => _audioHandler.pause();
 
   void seek(Duration position) => _audioHandler.seek(position);
 
   void previous() => _audioHandler.skipToPrevious();
+
   void next() => _audioHandler.skipToNext();
 
   Future<void> add() async {

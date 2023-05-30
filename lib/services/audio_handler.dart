@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
 Future<AudioHandler> initAudioService() async {
@@ -8,13 +9,16 @@ Future<AudioHandler> initAudioService() async {
       androidNotificationChannelId: 'com.mycompany.myapp.audio',
       androidNotificationChannelName: 'Audio Service Demo',
       androidNotificationOngoing: true,
+      notificationColor: Colors.red,
+      rewindInterval: Duration(seconds: 15),
+      fastForwardInterval: Duration(seconds: 15),
       androidStopForegroundOnPause: true,
 
     ),
   );
 }
 
-class MyAudioHandler extends BaseAudioHandler {
+class MyAudioHandler extends BaseAudioHandler with SeekHandler{
   final _player = AudioPlayer();
   final _playlist = ConcatenatingAudioSource(children: []);
   MyAudioHandler() {
@@ -46,8 +50,9 @@ class MyAudioHandler extends BaseAudioHandler {
         ],
         systemActions: const {
           MediaAction.seek,
+          MediaAction.seekForward,
           MediaAction.seekBackward,
-          MediaAction.seekForward
+
         },
         androidCompactActionIndices: const [0, 1, 3],
         processingState: const {

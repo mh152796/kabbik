@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'notifiers/play_button_notifier.dart';
@@ -19,10 +20,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+
   @override
   void initState() {
-    super.initState();
     getIt<PageManager>().init();
+
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+      super.didChangeDependencies();
   }
 
   @override
