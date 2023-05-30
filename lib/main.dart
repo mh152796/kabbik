@@ -7,6 +7,7 @@ import 'services/service_locator.dart';
 
 void main() async {
   await setupServiceLocator();
+
   runApp(const MyApp());
 }
 
@@ -37,7 +38,7 @@ class _MyAppState extends State<MyApp> {
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            children:  [
+            children: [
               CurrentSongTitle(),
               Playlist(),
               AddRemoveSongButtons(),
@@ -62,21 +63,23 @@ class SpeedAndSleepTimer extends StatefulWidget {
 class _SpeedAndSleepTimerState extends State<SpeedAndSleepTimer> {
   final pageManager = getIt<PageManager>();
   late double temValue;
+  late double sleepTime;
 
   @override
   void didChangeDependencies() {
-    temValue = pageManager.playBackSpeed.value;
+    sleepTime = pageManager.sleepTime.value;
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(temValue);
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         ElevatedButton(
           onPressed: () {
+            temValue = pageManager.playBackSpeed.value;
             showModalBottomSheet(
               context: context,
               builder: (_) {
@@ -112,12 +115,154 @@ class _SpeedAndSleepTimerState extends State<SpeedAndSleepTimer> {
             builder: (_, value, __) {
               String text = value.toStringAsPrecision(2);
 
-             return Column(
+              return Column(
                 children: [Text('${text}x'), Text("Speed")],
               );
             },
           ),
-        )
+        ),
+        ElevatedButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (_) {
+                return StatefulBuilder(
+                  builder: (context, StateSetter setState) {
+                    return Column(
+                      children: [
+                        Container(
+                          color: Colors.blueGrey,
+                          alignment: Alignment.center,
+                          height: 50,
+                          width: double.infinity,
+                          child: Text("Set Sleep Timer",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop(0.0);
+                          },
+                          child: Container(
+                            color: Colors.blueGrey,
+                            height: 50,
+                            width: double.infinity,
+                            child: Text("Sleep Timer Off",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop(5.0);
+                          },
+                          child: Container(
+                            color: Colors.blueGrey,
+                            height: 50,
+                            width: double.infinity,
+                            child: Text("5 Minutes",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop(10.0);
+                          },
+                          child: Container(
+                            color: Colors.blueGrey,
+                            height: 50,
+                            width: double.infinity,
+                            child: Text("10 Minutes",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop(15.0);
+                          },
+                          child: Container(
+                            color: Colors.blueGrey,
+                            width: double.infinity,
+                            height: 50,
+                            child: Text("15 Minutes",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop(20.0);
+                          },
+                          child: Container(
+                            color: Colors.blueGrey,
+                            width: double.infinity,
+                            height: 50,
+                            child: Text("20 Minutes",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              pageManager.setSpeed(temValue);
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("Close"))
+                      ],
+                    );
+                  },
+                );
+              },
+            ).then((value) {
+              pageManager.sleepTime.value = value;
+              if(value != 0){
+                pageManager.startSleepTimer(value);
+                pageManager.play();
+              }
+              else{
+                pageManager.cancelSleepTimer();
+              }
+            });
+          },
+          child: ValueListenableBuilder<double>(
+            valueListenable: pageManager.sleepTime,
+            builder: (_, value, __) {
+              return Column(
+                children: [
+                  if (value != 0) Text("Sleep After $value Minutes"),
+                  Icon(Icons.alarm),
+                  Text("Sleep Timer")
+                ],
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -211,7 +356,7 @@ class AudioProgressBar extends StatelessWidget {
 }
 
 class AudioControlButtons extends StatelessWidget {
-   AudioControlButtons({Key? key}) : super(key: key);
+  AudioControlButtons({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -220,22 +365,26 @@ class AudioControlButtons extends StatelessWidget {
       height: 60,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children:  [
+        children: [
           PreviousSongButton(),
-          ProgressUpDown(pre: true,),
+          ProgressUpDown(
+            pre: true,
+          ),
           PlayButton(),
-          ProgressUpDown(pre: false,),
+          ProgressUpDown(
+            pre: false,
+          ),
           NextSongButton(),
         ],
       ),
     );
   }
-
 }
 
 class ProgressUpDown extends StatefulWidget {
   bool pre;
-    ProgressUpDown({Key? key, required this.pre}) : super(key: key);
+
+  ProgressUpDown({Key? key, required this.pre}) : super(key: key);
 
   @override
   State<ProgressUpDown> createState() => _ProgressUpDownState();
@@ -246,31 +395,47 @@ class _ProgressUpDownState extends State<ProgressUpDown> {
   Widget build(BuildContext context) {
     final pageManager = getIt<PageManager>();
 
-    return ValueListenableBuilder<ProgressBarState>(valueListenable: pageManager.progressNotifier, builder: (_, value, __) {
-      return IconButton(iconSize: 50,onPressed: () {
-        if(widget.pre){
-          pageManager.seek(value.current - Duration(seconds: 10));
-
-        }
-        else{
-          pageManager.seek(value.current + Duration(seconds: 10));
-        }
-      }, icon: widget.pre? Column(
-        children: [
-          Icon(Icons.arrow_circle_left, size: 25,),
-          Text("10sec", style: TextStyle(fontSize: 10),)
-        ],
-      ) : Column(
-        children: [
-          Icon(Icons.arrow_circle_right, size: 25,),
-          Text("10sec", style: TextStyle(fontSize: 10),)
-        ],
-      ) );
-    },);
+    return ValueListenableBuilder<ProgressBarState>(
+      valueListenable: pageManager.progressNotifier,
+      builder: (_, value, __) {
+        return IconButton(
+            iconSize: 50,
+            onPressed: () {
+              if (widget.pre) {
+                pageManager.seek(value.current - Duration(seconds: 10));
+              } else {
+                pageManager.seek(value.current + Duration(seconds: 10));
+              }
+            },
+            icon: widget.pre
+                ? Column(
+                    children: [
+                      Icon(
+                        Icons.arrow_circle_left,
+                        size: 25,
+                      ),
+                      Text(
+                        "10sec",
+                        style: TextStyle(fontSize: 10),
+                      )
+                    ],
+                  )
+                : Column(
+                    children: [
+                      Icon(
+                        Icons.arrow_circle_right,
+                        size: 25,
+                      ),
+                      Text(
+                        "10sec",
+                        style: TextStyle(fontSize: 10),
+                      )
+                    ],
+                  ));
+      },
+    );
   }
 }
-
-
 
 class PreviousSongButton extends StatelessWidget {
   const PreviousSongButton({Key? key}) : super(key: key);

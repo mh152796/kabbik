@@ -4,11 +4,12 @@ import 'package:just_audio/just_audio.dart';
 Future<AudioHandler> initAudioService() async {
   return await AudioService.init(
     builder: () => MyAudioHandler(),
-    config: const AudioServiceConfig(
+    config:  AudioServiceConfig(
       androidNotificationChannelId: 'com.mycompany.myapp.audio',
       androidNotificationChannelName: 'Audio Service Demo',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
+
     ),
   );
 }
@@ -16,7 +17,6 @@ Future<AudioHandler> initAudioService() async {
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
   final _playlist = ConcatenatingAudioSource(children: []);
-
   MyAudioHandler() {
     _loadEmptyPlaylist();
     _notifyAudioHandlerAboutPlaybackEvents();
@@ -46,6 +46,8 @@ class MyAudioHandler extends BaseAudioHandler {
         ],
         systemActions: const {
           MediaAction.seek,
+          MediaAction.seekBackward,
+          MediaAction.seekForward
         },
         androidCompactActionIndices: const [0, 1, 3],
         processingState: const {
@@ -136,6 +138,27 @@ class MyAudioHandler extends BaseAudioHandler {
       tag: mediaItem,
     );
   }
+  // @override
+  // Future<void> onMediaAction(MediaAction action) async {
+  //   if (action == MediaAction.seekForward) {
+  //     final currentDuration = playbackState.value.position;
+  //     final seekDuration = Duration(seconds: 15);
+  //     final newDuration = currentDuration + seekDuration;
+  //
+  //     playbackState.add(playbackState.value.copyWith(
+  //       updatePosition: newDuration,
+  //     ));
+  //   } else if (action == MediaAction.seekBackward) {
+  //
+  //     final currentDuration = playbackState.value.position;
+  //     final seekDuration = Duration(seconds: 15);
+  //     final newDuration = currentDuration - seekDuration;
+  //
+  //     playbackState.add(playbackState.value.copyWith(
+  //       updatePosition: newDuration,
+  //     ));
+  //   }
+  // }
 
   @override
   Future<void> removeQueueItemAt(int index) async {

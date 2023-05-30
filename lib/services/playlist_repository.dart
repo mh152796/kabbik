@@ -13,7 +13,6 @@ class DemoPlaylist extends PlaylistRepository {
   Future<Map<String, String>> fetchAnotherSong() async {
     return _nextSong();
   }
-
   var _songIndex = 0;
   static const _maxSongNumber = 16;
 

@@ -1,9 +1,9 @@
-import 'dart:ffi';
+import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'notifiers/play_button_notifier.dart';
 import 'notifiers/progress_notifier.dart';
-import 'package:audio_service/audio_service.dart';
 import 'services/playlist_repository.dart';
 import 'services/service_locator.dart';
 
@@ -16,9 +16,11 @@ class PageManager {
   final playButtonNotifier = PlayButtonNotifier();
   final isLastSongNotifier = ValueNotifier<bool>(true);
   final playBackSpeed = ValueNotifier<double>(1.0);
+  final sleepTime = ValueNotifier<double>(0.0);
+  final sleepDuration = ValueNotifier<double>(0.0);
 
   final _audioHandler = getIt<AudioHandler>();
-
+  Timer? sleepTimer;
   // Events: Calls coming from the UI
   void init() async {
     await _loadPlaylist();
@@ -62,6 +64,7 @@ class PageManager {
     _audioHandler.playbackState.listen((playbackState) {
       playBackSpeed.value = playbackState.speed;
       final isPlaying = playbackState.playing;
+
       final processingState = playbackState.processingState;
       if (processingState == AudioProcessingState.loading ||
           processingState == AudioProcessingState.buffering) {
@@ -115,6 +118,22 @@ class PageManager {
       currentSongTitleNotifier.value = mediaItem?.title ?? '';
       _updateSkipButtons();
     });
+  }
+
+
+
+   void startSleepTimer(double duration) {
+    sleepTimer?.cancel();
+    sleepDuration.value = duration;// Cancel any existing timer
+    sleepTimer = Timer(Duration(seconds: duration.toInt()), () {
+      pause();
+      sleepTime.value = 0;// Stop the audio playback after the specified duration
+    });
+  }
+
+  void cancelSleepTimer() {
+    play();
+    sleepTimer?.cancel();
   }
 
   void _updateSkipButtons() {
